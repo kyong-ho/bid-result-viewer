@@ -1,6 +1,6 @@
-import { fetchG2bItems } from "./client";
-import { G2bApiError, toHttpError } from "./errors";
-import { mapBidder, mapNotice, mapPreliminaryPrice } from "./mappers";
+import { fetchG2bItems } from "./client.js";
+import { G2bApiError, toHttpError } from "./errors.js";
+import { mapBidder, mapNotice, mapPreliminaryPrice } from "./mappers.js";
 import type {
   RawBidNotice,
   RawOpengResult,

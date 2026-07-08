@@ -1,4 +1,4 @@
-import { G2bApiError } from "./errors";
+import { G2bApiError } from "./errors.js";
 import type { G2bResponseEnvelope } from "./rawTypes";
 
 export const DEFAULT_BASE_URL = "https://apis.data.go.kr/1230000";

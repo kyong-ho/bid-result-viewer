@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { fetchBidOpeningResult, toHttpError } from "../lib/g2b";
+import { fetchBidOpeningResult, toHttpError } from "../lib/g2b/index.js";
 
 /** GET /api/bid-result?bidNtceNo=R25BK01250632&bidNtceOrd=000 */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
