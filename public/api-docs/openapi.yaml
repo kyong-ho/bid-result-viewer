@@ -1,0 +1,313 @@
+# 수기 관리 스펙 — lib/g2b/types.ts, lib/g2b/errors.ts 변경 시 함께 수정할 것.
+# 업스트림(조달청 API 3종) 상세는 docs/g2b-api.md 참고.
+openapi: 3.0.3
+info:
+  title: 나라장터 개찰결과 조회 API
+  version: 1.0.0
+  description: |
+    입찰공고번호로 조달청 나라장터의 개찰 결과를 조회한다.
+
+    내부적으로 공공데이터포털 조달청 오픈 API 3종(공고정보 · 복수예비가격 상세 · 업체별 개찰결과)을
+    병렬 호출해 하나의 응답으로 조합한다. 용역(서비스) 입찰 기준.
+servers:
+  - url: /
+    description: 현재 오리진 (로컬 dev / Vercel 공용)
+# 클라이언트 인증 없음 — 조달청 서비스 키는 서버에만 보관되고 요청자는 키가 필요 없다.
+security: []
+paths:
+  /api/bid-result:
+    get:
+      operationId: getBidResult
+      summary: 개찰 결과 조회
+      description: |
+        공고번호(`bidNtceNo`) 기준으로 공고정보, 복수예비가격 15행, 업체별 개찰결과를 조회한다.
+
+        - `bidNtceOrd` 미지정 시 최신 차수를 자동 선택한다.
+        - 차수를 지정하면 해당 차수만 인정한다 — 존재하지 않는 차수면 다른 차수로 대체하지 않고 404를 반환한다.
+      parameters:
+        - name: bidNtceNo
+          in: query
+          required: true
+          description: 입찰공고번호
+          schema:
+            type: string
+          example: R25BK01250632
+        - name: bidNtceOrd
+          in: query
+          required: false
+          description: |
+            공고 차수. `"0"`/`"1"`도 허용되며 서버가 3자리(`"000"`, `"001"`)로 정규화한다.
+            미지정 시 최신 차수 자동 선택. 지정한 차수가 존재하지 않으면 404.
+          schema:
+            type: string
+          example: "000"
+      responses:
+        "200":
+          description: 개찰 결과 (공고정보 + 예비가격 + 업체별 결과)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BidOpeningResult"
+        "400":
+          description: 잘못된 요청 — `bidNtceNo` 누락 (code = `BAD_REQUEST`)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: 공고번호(bidNtceNo)를 입력해 주세요.
+                code: BAD_REQUEST
+        "404":
+          description: 해당 공고 없음 — 3개 API 모두 0건이거나 지정한 차수가 존재하지 않음 (code = `NOTICE_NOT_FOUND`)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: 해당 공고를 찾을 수 없습니다.
+                code: NOTICE_NOT_FOUND
+        "500":
+          description: 서버 오류 — 서비스 키 미설정(code = `MISSING_SERVICE_KEY`) 또는 알 수 없는 오류(code = `INTERNAL_ERROR`)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: 서버에 G2B_SERVICE_KEY가 설정되지 않았습니다.
+                code: MISSING_SERVICE_KEY
+        "502":
+          description: |
+            조달청 API 오류. code는 다음 중 하나:
+            - `AUTH_ERROR` — 서비스 키 미등록/오류
+            - `QUOTA_EXCEEDED` — 일일 호출 한도 초과
+            - `UPSTREAM_ERROR` — 조달청 API가 에러 코드를 반환
+            - `BAD_RESPONSE` — 응답을 해석할 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: "조달청 API 오류: SERVICE_KEY_IS_NOT_REGISTERED_ERROR"
+                code: AUTH_ERROR
+components:
+  schemas:
+    BidOpeningResult:
+      type: object
+      description: 개찰 결과 응답 (lib/g2b/types.ts)
+      required: [notice, prelimPrices, bidders]
+      properties:
+        notice:
+          $ref: "#/components/schemas/NoticeInfo"
+        prelimPrices:
+          type: array
+          description: 복수예비가격 목록 (sno 오름차순, 통상 15행)
+          items:
+            $ref: "#/components/schemas/PreliminaryPrice"
+        bidders:
+          type: array
+          description: 업체별 개찰결과 목록 (rank 오름차순)
+          items:
+            $ref: "#/components/schemas/BidderResult"
+      example:
+        notice:
+          bidNtceNo: R25BK01250632
+          bidNtceOrd: "000"
+          bidNtceNm: PQ 후 가격입찰 공고(안산선 지하화 통합개발사업 기본계획 수립 용역)
+          rbidNo: "000"
+          realOpengDt: 2026-01-08 15:34:16
+          basePriceStandard: 행자부
+          upperCount: 7
+          totalPrelimCount: 15
+          prelimMadeAt: 2026-01-08 15:29:08
+          prelimProvided: true
+          plannedPrice: 1974820700
+          baseAmount: 1981548000
+          ntceInsttNm: 경기도청
+          dminsttNm: 경기도청 북부청사
+          presmptPrce: 1801408000
+          sucsfbidLwltRate: 79.995
+          opengDt: 2026-01-08 15:00:00
+        prelimPrices:
+          - sno: 1
+            price: 2037665500
+            drawn: true
+            drawCount: 2
+          - sno: 2
+            price: 1965438100
+            drawn: true
+            drawCount: 2
+        bidders:
+          - rank: 1
+            bizNo: 312-81-11675
+            companyName: 주식회사 경동엔지니어링
+            ceoName: 강재홍
+            bidAmount: 1602889000
+            bidRate: 81.166
+            drawNos: "04 08"
+            bidAt: 2026-01-08 09:30:46
+            remark: 정상
+            opengStatus: 개찰완료
+    NoticeInfo:
+      type: object
+      description: 공고정보 — 공고정보 API와 예비가격 API의 15행 공통 필드를 합쳐 구성
+      required:
+        - bidNtceNo
+        - bidNtceOrd
+        - bidNtceNm
+        - rbidNo
+        - realOpengDt
+        - basePriceStandard
+        - upperCount
+        - totalPrelimCount
+        - prelimMadeAt
+        - prelimProvided
+        - plannedPrice
+        - baseAmount
+        - ntceInsttNm
+        - dminsttNm
+        - presmptPrce
+        - sucsfbidLwltRate
+        - opengDt
+      properties:
+        bidNtceNo:
+          type: string
+          description: 입찰공고번호
+        bidNtceOrd:
+          type: string
+          description: 공고 차수 (3자리, 예 "000")
+        bidNtceNm:
+          type: string
+          description: 공고명
+        rbidNo:
+          type: string
+          description: 재입찰번호
+        realOpengDt:
+          type: string
+          description: 실제 개찰일시 (예 "2026-01-08 15:34:16")
+        basePriceStandard:
+          type: string
+          description: 기초금액기준 (예 "행자부")
+        upperCount:
+          type: number
+          nullable: true
+          description: 상위갯수
+        totalPrelimCount:
+          type: number
+          nullable: true
+          description: 복수예비가격 수 (통상 15)
+        prelimMadeAt:
+          type: string
+          description: 예비가격 작성시각
+        prelimProvided:
+          type: boolean
+          description: 예비가격 정보제공 여부
+        plannedPrice:
+          type: number
+          nullable: true
+          description: 예정가격 (원) — 예비가격 API의 15행 공통 필드에서 추출
+        baseAmount:
+          type: number
+          nullable: true
+          description: 기초금액 (원) — 예비가격 API의 15행 공통 필드에서 추출
+        ntceInsttNm:
+          type: string
+          description: 공고기관
+        dminsttNm:
+          type: string
+          description: 수요기관
+        presmptPrce:
+          type: number
+          nullable: true
+          description: 추정가격 (원)
+        sucsfbidLwltRate:
+          type: number
+          nullable: true
+          description: 낙찰하한율 (%)
+        opengDt:
+          type: string
+          description: 개찰(예정)일시
+    PreliminaryPrice:
+      type: object
+      description: 복수예비가격 1행
+      required: [sno, price, drawn, drawCount]
+      properties:
+        sno:
+          type: integer
+          minimum: 1
+          maximum: 15
+          description: 예가 순번 (1~15)
+        price:
+          type: number
+          description: 예비가격 (원)
+        drawn:
+          type: boolean
+          description: 추첨 여부 (통상 15행 중 4행이 true)
+        drawCount:
+          type: integer
+          description: 추첨 횟수
+    BidderResult:
+      type: object
+      description: 업체별 개찰결과 1건
+      required:
+        - rank
+        - bizNo
+        - companyName
+        - ceoName
+        - bidAmount
+        - bidRate
+        - drawNos
+        - bidAt
+        - remark
+        - opengStatus
+      properties:
+        rank:
+          type: integer
+          description: 개찰 순위 (입찰금액 낮은 순)
+        bizNo:
+          type: string
+          description: 사업자등록번호 — 하이픈 포맷 (예 "312-81-11675")
+        companyName:
+          type: string
+          description: 상호명 (공동수급체명은 미제공, 대표사명만)
+        ceoName:
+          type: string
+          description: 대표자명
+        bidAmount:
+          type: number
+          description: 입찰금액 (원)
+        bidRate:
+          type: number
+          nullable: true
+          description: 투찰율 (%)
+        drawNos:
+          type: string
+          description: 추첨번호 — 공백 구분 (예 "04 08")
+        bidAt:
+          type: string
+          description: 투찰일시
+        remark:
+          type: string
+          description: 비고 (예 "정상")
+        opengStatus:
+          type: string
+          description: 개찰 상태 (예 "개찰완료")
+    ErrorResponse:
+      type: object
+      description: 에러 응답 — 모든 에러는 이 형태로 반환 (lib/g2b/errors.ts)
+      required: [error, code]
+      properties:
+        error:
+          type: string
+          description: 사람이 읽을 수 있는 에러 메시지 (한글)
+        code:
+          type: string
+          description: 에러 코드
+          enum:
+            - BAD_REQUEST
+            - NOTICE_NOT_FOUND
+            - MISSING_SERVICE_KEY
+            - INTERNAL_ERROR
+            - AUTH_ERROR
+            - QUOTA_EXCEEDED
+            - UPSTREAM_ERROR
+            - BAD_RESPONSE

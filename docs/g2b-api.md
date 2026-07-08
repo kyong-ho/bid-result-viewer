@@ -3,6 +3,8 @@
 `lib/g2b/` 모듈이 다루는 공공데이터포털(data.go.kr) 조달청 오픈 API 3종의 명세와,
 응답 데이터의 특성·변환 규칙·에러 처리 방식을 정리한다.
 
+> 자체 API(`GET /api/bid-result`)의 공식 스펙은 `/api-docs/`(Swagger UI) 및 [public/api-docs/openapi.yaml](../public/api-docs/openapi.yaml) 참고.
+
 - Base URL: `https://apis.data.go.kr/1230000`
 - 인증: 쿼리 파라미터 `serviceKey` (공공데이터포털에서 발급)
 - 모든 요청에 `type=json` 부착 (client.ts가 자동 처리)

@@ -19,6 +19,7 @@ Vercel 배포 시에는 `api/bid-result.ts` 서버리스 함수가 같은 역할
 
 ## 문서
 
+- `/api-docs/` — 자체 API(`GET /api/bid-result`) Swagger UI (스펙: [public/api-docs/openapi.yaml](public/api-docs/openapi.yaml))
 - [docs/g2b-api.md](docs/g2b-api.md) — 조달청 API 연동 명세: 엔드포인트·필드 매핑·응답 특성·에러 처리
 - [docs/architecture.md](docs/architecture.md) — 아키텍처·데이터 흐름·백엔드 이식 가이드
 
