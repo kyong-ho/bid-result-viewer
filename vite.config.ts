@@ -9,7 +9,12 @@ import { fetchBidOpeningResult, toHttpError } from "./lib/g2b";
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   return {
-    plugins: [react(), tailwindcss(), bidResultDevApi(env.G2B_SERVICE_KEY)],
+    plugins: [
+      react(),
+      tailwindcss(),
+      bidResultDevApi(env.G2B_SERVICE_KEY),
+      apiDocsDevRewrite(),
+    ],
   };
 });
 
@@ -23,6 +28,27 @@ function bidResultDevApi(serviceKey: string | undefined): Plugin {
     configureServer(server) {
       server.middlewares.use("/api/bid-result", (req, res) => {
         void handleBidResult(req, res, serviceKey);
+      });
+    },
+  };
+}
+
+/**
+ * 로컬 개발용 /api-docs 경로 재작성.
+ * Vite dev의 public 정적 서빙은 디렉토리 index를 해석하지 않아 /api-docs/가
+ * SPA 폴백(React 앱)으로 넘어가므로, public/api-docs/index.html로 직접 연결한다.
+ * 운영(Vercel)에서는 정적 호스팅이 디렉토리 index를 기본 서빙하므로 불필요.
+ */
+function apiDocsDevRewrite(): Plugin {
+  return {
+    name: "api-docs-dev-rewrite",
+    configureServer(server) {
+      server.middlewares.use((req, _res, next) => {
+        const path = req.url?.split("?")[0];
+        if (path === "/api-docs" || path === "/api-docs/") {
+          req.url = "/api-docs/index.html";
+        }
+        next();
       });
     },
   };
