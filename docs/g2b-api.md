@@ -17,7 +17,7 @@
 | --- | -------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
 | ①   | 공고 기본정보        | `/ad/BidPublicInfoService/getBidPblancListInfoServc`              | `inqryDiv=2`(고정), `bidNtceNo`, `pageNo=1`, `numOfRows=10`                          |
 | ②   | 예비가격 상세 (15행) | `/as/ScsbidInfoService/getOpengResultListInfoServcPreparPcDetail` | `inqryDiv=2`(고정), `bidNtceNo`, `numOfRows=100`                                     |
-| ③   | 업체별 개찰결과      | `/as/ScsbidInfoService/getOpengResultListInfoOpengCompt`          | `bidNtceNo`, `bidNtceOrd`(선택), `bidClsfcNo`(선택), `rbidNo`(선택), `numOfRows=100` |
+| ③   | 업체별 개찰결과      | `/as/ScsbidInfoService/getOpengResultListInfoOpengCompt`          | `bidNtceNo`, `bidNtceOrd`(선택), `bidClsfcNo`(선택), `rbidNo`(선택), `numOfRows=300` |
 
 ※ 용역(서비스) 입찰 기준. 공사/물품은 오퍼레이션명의 `Servc` 부분이 다르다.
 
@@ -29,7 +29,7 @@
     "header": { "resultCode": "00", "resultMsg": "정상" }, // "00"이 아니면 에러
     "body": {
       "items": [/* ... */],
-      "numOfRows": 100,
+      "numOfRows": 300,
       "pageNo": 1,
       "totalCount": 15,
     },
@@ -119,18 +119,18 @@
 
 ### ③ 업체별 개찰결과 (`RawOpengResult` → `BidderResult`)
 
-| 원본 필드            | 도메인 필드   | 화면 표기      | 비고                              |
-| -------------------- | ------------- | -------------- | --------------------------------- |
-| `opengRank`          | `rank`        | 순위           | 입찰금액 낮은 순                  |
-| `prcbdrBizno`        | `bizNo`       | 사업자등록번호 | `312-81-11675`로 포맷             |
-| `prcbdrNm`           | `companyName` | 상호명         | 공동수급체명은 미제공(대표사명만) |
-| `prcbdrCeoNm`        | `ceoName`     | 대표자명       |                                   |
-| `bidprcAmt`          | `bidAmount`   | 입찰금액       |                                   |
-| `bidprcrt`           | `bidRate`     | 투찰율(%)      | API 제공값 그대로                 |
-| `drwtNo1`, `drwtNo2` | `drawNos`     | 추첨번호       | 앞 공백 trim 후 `"04 08"`로 합침  |
-| `bidprcDt`           | `bidAt`       | 투찰일시       |                                   |
-| `rmrk`               | `remark`      | 비고           |                                   |
-| `opengRsltDivNm`     | `opengStatus` | 개찰 상태 배지 | 예: 개찰완료                      |
+| 원본 필드            | 도메인 필드   | 화면 표기      | 비고                                                                                    |
+| -------------------- | ------------- | -------------- | --------------------------------------------------------------------------------------- |
+| `opengRank`          | `rank`        | 순위           | 입찰금액 낮은 순(`rank=0`은 적격점수 미달 등 순위 없음 → 최하위로 정렬, 원본 순서 유지) |
+| `prcbdrBizno`        | `bizNo`       | 사업자등록번호 | `312-81-11675`로 포맷                                                                   |
+| `prcbdrNm`           | `companyName` | 상호명         | 공동수급체명은 미제공(대표사명만)                                                       |
+| `prcbdrCeoNm`        | `ceoName`     | 대표자명       |                                                                                         |
+| `bidprcAmt`          | `bidAmount`   | 입찰금액       |                                                                                         |
+| `bidprcrt`           | `bidRate`     | 투찰율(%)      | API 제공값 그대로                                                                       |
+| `drwtNo1`, `drwtNo2` | `drawNos`     | 추첨번호       | 앞 공백 trim 후 `"04 08"`로 합침                                                        |
+| `bidprcDt`           | `bidAt`       | 투찰일시       |                                                                                         |
+| `rmrk`               | `remark`      | 비고           |                                                                                         |
+| `opengRsltDivNm`     | `opengStatus` | 개찰 상태 배지 | 예: 개찰완료                                                                            |
 
 요약 샘플 (8건 중 1건):
 
@@ -152,13 +152,13 @@
 
 ## 3. 응답 데이터 특성 (mapper/client가 처리)
 
-| 특성                                             | 처리 위치                                                |
-| ------------------------------------------------ | -------------------------------------------------------- |
-| 모든 숫자가 문자열(`"1981548000"`), 빈 값은 `""` | `mappers.ts` `toNumber()` — `""` → `null`                |
-| 결과 0건이면 `items`가 배열이 아니라 `""`        | `client.ts` — `Array.isArray()` 검사 후 빈 배열로 정규화 |
-| 추첨번호에 앞 공백 (`" 04"`)                     | `mappers.ts` `mapBidder()` — trim                        |
-| 사업자번호가 10자리 숫자 문자열                  | `mappers.ts` `formatBizNo()` — 3-2-5 하이픈              |
-| 예가 API 응답이 순번 정렬 보장 안 됨             | `index.ts` — `sno` 기준 정렬 (업체는 `rank` 기준)        |
+| 특성                                             | 처리 위치                                                                                      |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| 모든 숫자가 문자열(`"1981548000"`), 빈 값은 `""` | `mappers.ts` `toNumber()` — `""` → `null`                                                      |
+| 결과 0건이면 `items`가 배열이 아니라 `""`        | `client.ts` — `Array.isArray()` 검사 후 빈 배열로 정규화                                       |
+| 추첨번호에 앞 공백 (`" 04"`)                     | `mappers.ts` `mapBidder()` — trim                                                              |
+| 사업자번호가 10자리 숫자 문자열                  | `mappers.ts` `formatBizNo()` — 3-2-5 하이픈                                                    |
+| 예가 API 응답이 순번 정렬 보장 안 됨             | `index.ts` — `sno` 기준 정렬 (업체는 `rank` 기준, `rank=0`은 최하위로 밀어내되 원본 순서 유지) |
 
 ## 4. 에러 처리 규칙
 
@@ -202,5 +202,5 @@
 3. 공고 선택(`pickNotice`): 차수 미지정이면 마지막 항목(최신 차수). **차수 지정 시 해당 차수만 인정** — 매칭 실패하면 다른 차수로 대체하지 않고 `NOTICE_NOT_FOUND` throw (존재하는 차수 목록을 메시지에 안내)
 4. 3종 모두 0건이면 `NOTICE_NOT_FOUND` throw
 5. 차수 지정 시 ②·③ 응답 행도 차수 기준으로 필터 (다른 차수의 예가/업체가 섞이지 않도록)
-6. `NoticeInfo`는 ①(공고) + ②(예비가격 첫 행)을 합쳐 구성, 예가는 `sno` 정렬, 업체는 `rank` 정렬
+6. `NoticeInfo`는 ①(공고) + ②(예비가격 첫 행)을 합쳐 구성, 예가는 `sno` 정렬, 업체는 `rank` 정렬 (`rank=0`은 `Infinity`로 취급해 최하위로 보내되, 안정 정렬(stable sort)이라 `rank=0`끼리는 원본 순서를 그대로 유지)
 7. 반환: `{ notice, prelimPrices, bidders }` (`BidOpeningResult`)

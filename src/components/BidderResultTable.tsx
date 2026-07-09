@@ -38,10 +38,11 @@ export default function BidderResultTable({
 }: {
   bidders: BidderResult[];
 }) {
-  const [sortKey, setSortKey] = useState<SortKey>("rank");
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [asc, setAsc] = useState(true);
 
   const sorted = useMemo(() => {
+    if (sortKey === null) return bidders;
     const copy = [...bidders];
     copy.sort((a, b) => {
       const cmp =
