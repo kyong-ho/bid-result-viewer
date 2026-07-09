@@ -26,7 +26,7 @@ export async function fetchBidOpeningResult(
   const { serviceKey, bidNtceNo, baseUrl } = params;
   const bidNtceOrd = normalizeOrd(params.bidNtceOrd);
   const client = { serviceKey, baseUrl };
-  const paging = { pageNo: 1, numOfRows: 100 };
+  const paging = { pageNo: 1, numOfRows: 300 };
 
   const [notices, prelimRows, bidderRows] = await Promise.all([
     fetchG2bItems<RawBidNotice>(
@@ -85,7 +85,11 @@ export async function fetchBidOpeningResult(
     prelimPrices: prelims
       .map(mapPreliminaryPrice)
       .sort((a, b) => a.sno - b.sno),
-    bidders: bidders.map(mapBidder).sort((a, b) => a.rank - b.rank),
+    bidders: bidders.map(mapBidder).sort((a, b) => {
+      const rankA = a.rank === 0 ? Infinity : a.rank;
+      const rankB = b.rank === 0 ? Infinity : b.rank;
+      return rankA - rankB;
+    }),
   };
 }
 
