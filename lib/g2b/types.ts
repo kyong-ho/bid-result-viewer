@@ -46,3 +46,61 @@ export interface BidOpeningResult {
   prelimPrices: PreliminaryPrice[];
   bidders: BidderResult[];
 }
+
+export interface BidNoticeListItem {
+  bidNtceNo: string;
+  bidNtceOrd: string;
+  bidNtceNm: string;
+  ntceInsttNm: string;
+  dminsttNm: string;
+  bidNtceDt: string;
+  bidBeginDt: string;
+  bidClseDt: string;
+  opengDt: string;
+  presmptPrce: number | null;
+  asignBdgtAmt: number | null;
+  sucsfbidLwltRate: number | null;
+  cntrctCnclsMthdNm: string;
+  ntceKindNm: string;
+  bidNtceSttusNm: string;
+}
+
+export interface BidNoticeList {
+  items: BidNoticeListItem[];
+  pageNo: number;
+  numOfRows: number;
+  totalCount: number;
+}
+
+export interface BidNoticeDetail {
+  bidNtceNo: string;
+  bidNtceOrd: string;
+  bidNtceNm: string;
+  ntceInsttNm: string;
+  dminsttNm: string;
+  bidNtceDt: string;
+  bidBeginDt: string;
+  bidClseDt: string;
+  opengDt: string;
+  baseAmount: number | null;
+  presmptPrce: number | null;
+  asignBdgtAmt: number | null;
+  sucsfbidLwltRate: number | null;
+  cntrctCnclsMthdNm: string;
+  ntceKindNm: string;
+  bidNtceSttusNm: string;
+}
+
+export interface BidNoticeExcelPayload {
+  detail: BidNoticeDetail;
+  excel: {
+    bidNumberForSheet: string;
+    bidNumberRaw: string;
+    order: string;
+    agency: string;
+    title: string;
+    baseAmount: number | null;
+    bidSubmitText: string;
+    openDateText: string;
+  };
+}

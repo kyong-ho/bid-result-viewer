@@ -22,10 +22,18 @@ export interface RawBidNotice {
   bidNtceNm?: string;
   ntceInsttNm?: string; // 공고기관
   dminsttNm?: string; // 수요기관
+  bidNtceDt?: string; // 공고일시
+  bidBeginDt?: string; // 입찰개시일시
+  bidClseDt?: string; // 입찰마감일시
   opengDt?: string; // 개찰(예정)일시
+  bssamt?: string; // 기초금액
+  bdgtAmt?: string; // 예산금액
   presmptPrce?: string; // 추정가격
   asignBdgtAmt?: string; // 배정예산
   sucsfbidLwltRate?: string; // 낙찰하한율
+  cntrctCnclsMthdNm?: string; // 계약방법
+  ntceKindNm?: string; // 공고종류
+  bidNtceSttusNm?: string; // 공고상태
   prearngPrceDcsnMthdNm?: string; // 예가 방식 (복수예가 등)
   totPrdprcNum?: string; // 총 예가 수
   drwtPrdprcNum?: string; // 추첨 예가 수
