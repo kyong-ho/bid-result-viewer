@@ -77,9 +77,12 @@ export async function fetchG2bItemsPage<T>(
 
   const header = envelope.response?.header;
   if (header?.resultCode !== "00") {
+    const resultCode = header?.resultCode ?? "응답구조오류";
+    const resultMsg = header?.resultMsg?.trim();
+    const fallbackMsg = summarizeUnexpectedResponse(text);
     throw new G2bApiError(
       "UPSTREAM_ERROR",
-      `조달청 API 오류 [${header?.resultCode ?? "??"}]: ${header?.resultMsg ?? "원인 미상"}`,
+      `조달청 API 오류 (${path}) [${resultCode}]: ${resultMsg || fallbackMsg}`,
     );
   }
 
@@ -91,4 +94,10 @@ export async function fetchG2bItemsPage<T>(
     numOfRows: Number(body?.numOfRows ?? params.numOfRows ?? 0),
     totalCount: Number(body?.totalCount ?? 0),
   };
+}
+
+function summarizeUnexpectedResponse(text: string): string {
+  const compact = text.replace(/\s+/g, " ").trim();
+  if (compact === "") return "빈 응답을 반환했습니다.";
+  return `예상한 response.header가 없습니다. 응답 일부: ${compact.slice(0, 300)}`;
 }

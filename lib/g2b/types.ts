@@ -57,12 +57,17 @@ export interface BidNoticeListItem {
   bidBeginDt: string;
   bidClseDt: string;
   opengDt: string;
+  baseAmount: number | null;
   presmptPrce: number | null;
   asignBdgtAmt: number | null;
   sucsfbidLwltRate: number | null;
   cntrctCnclsMthdNm: string;
   ntceKindNm: string;
   bidNtceSttusNm: string;
+  reNtceYn: string;
+  rbidPermsnYn: string;
+  rbidOpengDt: string;
+  srvceDivNm: string;
 }
 
 export interface BidNoticeList {
@@ -89,6 +94,10 @@ export interface BidNoticeDetail {
   cntrctCnclsMthdNm: string;
   ntceKindNm: string;
   bidNtceSttusNm: string;
+  reNtceYn: string;
+  rbidPermsnYn: string;
+  rbidOpengDt: string;
+  srvceDivNm: string;
 }
 
 export interface BidNoticeExcelPayload {
@@ -104,3 +113,4 @@ export interface BidNoticeExcelPayload {
     openDateText: string;
   };
 }
+

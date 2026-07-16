@@ -5,11 +5,19 @@
 
 ## API
 
-로컬 개발 서버 기준:
+같은 네트워크의 다른 PC에서 사용할 때는 이 PC에서 서버를 네트워크 공유 모드로 실행합니다.
+
+```powershell
+npm run dev:lan
+```
+
+현재 이 PC의 네트워크 주소 기준 API:
 
 ```text
-http://127.0.0.1:5173/api/bid-notice-detail?format=vba&bidNtceNo=공고번호
+http://192.168.6.207:5173/api/bid-notice-detail?format=vba&bidNtceNo=공고번호
 ```
+
+이 PC의 IP가 바뀌면 `docs/excel/BidNoticeImporter.bas` 상단의 `BID_NOTICE_API_BASE` 주소도 같이 바꿔야 합니다.
 
 응답은 VBA에서 파싱하기 쉬운 `키=값` 텍스트입니다.
 
@@ -17,7 +25,9 @@ http://127.0.0.1:5173/api/bid-notice-detail?format=vba&bidNtceNo=공고번호
 
 1. 엑셀에서 `Alt + F11`을 누릅니다.
 2. VBA 편집기에서 `파일 > 파일 가져오기`를 선택합니다.
-3. 이 파일을 가져옵니다: `docs/excel/BidNoticeImporter.bas`\n   - 파일 가져오기가 아니라 코드 창에 직접 붙여넣어도 됩니다. 현재 버전은 `Attribute VB_Name` 줄을 제거해 붙여넣기 구문 오류가 나지 않습니다.\n4. 엑셀로 돌아와 `Alt + F8`을 누르고 `공고상세불러오기`를 실행합니다.
+3. 이 파일을 가져옵니다: `docs/excel/BidNoticeImporter.bas`
+   - 파일 가져오기가 아니라 코드 창에 직접 붙여넣어도 됩니다. 현재 버전은 `Attribute VB_Name` 줄을 제거해 붙여넣기 구문 오류가 나지 않습니다.
+4. 엑셀로 돌아와 `Alt + F8`을 누르고 `공고상세불러오기`를 실행합니다.
 
 ## 동작 방식
 
@@ -50,4 +60,3 @@ Done:
     Application.EnableEvents = True
 End Sub
 ```
-

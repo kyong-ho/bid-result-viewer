@@ -31,9 +31,11 @@ function bidNoticeDetailDevApi(serviceKey: string | undefined): Plugin {
   return {
     name: "bid-notice-detail-dev-api",
     configureServer(server) {
-      server.middlewares.use("/api/bid-notice-detail", (req, res) => {
-        void handleBidNoticeDetail(req, res, serviceKey);
-      });
+      for (const path of ["/api/bid-notice-detail", "/api/bid-nitice-detail"]) {
+        server.middlewares.use(path, (req, res) => {
+          void handleBidNoticeDetail(req, res, serviceKey);
+        });
+      }
     },
   };
 }
@@ -255,3 +257,4 @@ function buildDateTimeRange(
     inqryEndDt: `${to.replace(/-/g, "")}2359`,
   };
 }
+

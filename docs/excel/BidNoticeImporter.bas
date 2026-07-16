@@ -1,8 +1,8 @@
 Option Explicit
 
-' 로컬 개발 서버: http://127.0.0.1:5173
+' 네트워크 공유용 개발 서버: http://192.168.6.207:5173
 ' 배포 후에는 아래 주소를 배포 도메인으로 바꾸면 됩니다.
-Private Const BID_NOTICE_API_BASE As String = "http://127.0.0.1:5173/api/bid-notice-detail"
+Private Const BID_NOTICE_API_BASE As String = "http://192.168.6.207:5173/api/bid-notice-detail"
 Private Const INPUT_SHEET_NAME As String = "입력용(개조)"
 
 Public Sub 공고상세불러오기()
@@ -50,20 +50,41 @@ End Sub
 
 Private Sub WriteNoticeData(ByVal ws As Worksheet, ByVal data As Object)
     ' D12:D19의 기존 수식은 무시하고 API 응답값을 직접 입력합니다.
+    ' 대상 셀은 D:J 병합셀이라 병합 영역 전체를 안전하게 지우고 왼쪽 위 셀에 씁니다.
     ' D13(공동도급), D14 등 API와 무관한 기존 셀은 건드리지 않습니다.
-    ws.Range("D12").Value = NzText(data, "공고기관")
-    ws.Range("D15").Value = NzText(data, "공고명")
-    ws.Range("D16").Value = FirstText(data, "입찰공고번호표시", "입찰공고번호")
+    PutMergedValue ws.Range("D12"), NzText(data, "공고기관")
+    PutMergedValue ws.Range("D15"), NzText(data, "공고명")
+    PutMergedValue ws.Range("D16"), FirstText(data, "입찰공고번호표시", "입찰공고번호")
 
     If NzText(data, "기초금액") <> "" Then
-        ws.Range("D17").Value = CDbl(NzText(data, "기초금액"))
-        ws.Range("D17").NumberFormat = "#,##0"
+        PutMergedValue ws.Range("D17"), CDbl(NzText(data, "기초금액")), "#,##0"
     Else
-        ws.Range("D17").ClearContents
+        ClearMergedValue ws.Range("D17")
     End If
 
-    ws.Range("D18").Value = NzText(data, "입찰서제출")
-    ws.Range("D19").Value = NzText(data, "개찰")
+    PutMergedValue ws.Range("D18"), NzText(data, "입찰서제출")
+    PutMergedValue ws.Range("D19"), NzText(data, "개찰")
+End Sub
+
+Private Sub PutMergedValue(ByVal cell As Range, ByVal value As Variant, Optional ByVal numberFormat As String = "")
+    Dim target As Range
+    If cell.MergeCells Then
+        Set target = cell.MergeArea
+    Else
+        Set target = cell
+    End If
+
+    target.ClearContents
+    target.Cells(1, 1).Value = value
+    If numberFormat <> "" Then target.NumberFormat = numberFormat
+End Sub
+
+Private Sub ClearMergedValue(ByVal cell As Range)
+    If cell.MergeCells Then
+        cell.MergeArea.ClearContents
+    Else
+        cell.ClearContents
+    End If
 End Sub
 
 Private Function HttpGetText(ByVal url As String) As String
@@ -151,3 +172,5 @@ Private Function UrlEncodeUtf8(ByVal value As String) As String
 
     UrlEncodeUtf8 = result
 End Function
+
+

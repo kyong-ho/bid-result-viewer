@@ -24,7 +24,7 @@ export default function BidNoticeSearchPanel({ loading, onSearch }: Props) {
         <div>
           <h2 className="text-lg font-bold">용역 입찰공고 목록</h2>
           <p className="mt-1 text-sm text-slate-500">
-            공고일 기준으로 나라장터 용역 공고를 조회합니다.
+            최근 2주일 이내에 게시된 나라장터 용역 공고를 조회합니다.
           </p>
         </div>
       </div>
@@ -52,7 +52,7 @@ export default function BidNoticeSearchPanel({ loading, onSearch }: Props) {
           <input
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
-            placeholder="공고명, 공고기관, 수요기관"
+            placeholder="공고명 단어 입력"
             className="w-full rounded-md border border-slate-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
           />
         </label>
@@ -71,7 +71,7 @@ export default function BidNoticeSearchPanel({ loading, onSearch }: Props) {
 function getDefaultDateRange(): { from: string; to: string } {
   const to = new Date();
   const from = new Date(to);
-  from.setDate(to.getDate() - 7);
+  from.setDate(to.getDate() - 14);
   return { from: toDateInputValue(from), to: toDateInputValue(to) };
 }
 
@@ -81,3 +81,8 @@ function toDateInputValue(date: Date): string {
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
+
+
+
+
+
