@@ -1,9 +1,16 @@
 import type {
   RawBidNotice,
+  RawBidNoticeBaseAmount,
   RawOpengResult,
   RawPreliminaryPriceDetail,
 } from "./rawTypes";
-import type { BidderResult, NoticeInfo, PreliminaryPrice } from "./types";
+import type {
+  BidderResult,
+  BidNoticeDetail,
+  BidNoticeListItem,
+  NoticeInfo,
+  PreliminaryPrice,
+} from "./types";
 
 /** "1981548000" → 1981548000, ""/undefined → null */
 export function toNumber(value: string | undefined | null): number | null {
@@ -38,12 +45,65 @@ export function mapNotice(
     prelimMadeAt: prelim?.compnoRsrvtnPrceMkngDt ?? "",
     prelimProvided: prelimCount > 0,
     plannedPrice: toNumber(prelim?.plnprc),
-    baseAmount: toNumber(prelim?.bssamt),
+    baseAmount: toNumber(prelim?.bssamt) ?? getNoticeBaseAmount(notice),
     ntceInsttNm: notice?.ntceInsttNm ?? "",
     dminsttNm: notice?.dminsttNm ?? "",
     presmptPrce: toNumber(notice?.presmptPrce),
     sucsfbidLwltRate: toNumber(notice?.sucsfbidLwltRate),
     opengDt: notice?.opengDt ?? "",
+  };
+}
+
+export function mapBidNoticeListItem(raw: RawBidNotice): BidNoticeListItem {
+  return {
+    bidNtceNo: raw.bidNtceNo?.trim() ?? "",
+    bidNtceOrd: raw.bidNtceOrd?.trim() ?? "",
+    bidNtceNm: raw.bidNtceNm?.trim() ?? "",
+    ntceInsttNm: raw.ntceInsttNm?.trim() ?? "",
+    dminsttNm: raw.dminsttNm?.trim() ?? "",
+    bidNtceDt: raw.bidNtceDt ?? "",
+    bidBeginDt: raw.bidBeginDt ?? "",
+    bidClseDt: raw.bidClseDt ?? "",
+    opengDt: raw.opengDt ?? "",
+    baseAmount: toNumber(raw.bssamt),
+    presmptPrce: toNumber(raw.presmptPrce),
+    asignBdgtAmt: toNumber(raw.asignBdgtAmt),
+    sucsfbidLwltRate: toNumber(raw.sucsfbidLwltRate),
+    cntrctCnclsMthdNm: raw.cntrctCnclsMthdNm?.trim() ?? "",
+    ntceKindNm: raw.ntceKindNm?.trim() ?? "",
+    bidNtceSttusNm: raw.bidNtceSttusNm?.trim() ?? "",
+    reNtceYn: raw.reNtceYn?.trim() ?? "",
+    rbidPermsnYn: raw.rbidPermsnYn?.trim() ?? "",
+    rbidOpengDt: raw.rbidOpengDt ?? "",
+    srvceDivNm: raw.srvceDivNm?.trim() ?? "",
+  };
+}
+
+export function mapBidNoticeDetail(
+  raw: RawBidNotice,
+  baseAmountRow: RawBidNoticeBaseAmount | null = null,
+): BidNoticeDetail {
+  return {
+    bidNtceNo: raw.bidNtceNo?.trim() ?? "",
+    bidNtceOrd: raw.bidNtceOrd?.trim() ?? "",
+    bidNtceNm: raw.bidNtceNm?.trim() ?? "",
+    ntceInsttNm: raw.ntceInsttNm?.trim() ?? "",
+    dminsttNm: raw.dminsttNm?.trim() ?? "",
+    bidNtceDt: raw.bidNtceDt ?? "",
+    bidBeginDt: raw.bidBeginDt ?? "",
+    bidClseDt: raw.bidClseDt ?? "",
+    opengDt: raw.opengDt ?? "",
+    baseAmount: toNumber(baseAmountRow?.bssamt),
+    presmptPrce: toNumber(raw.presmptPrce),
+    asignBdgtAmt: toNumber(raw.asignBdgtAmt),
+    sucsfbidLwltRate: toNumber(raw.sucsfbidLwltRate),
+    cntrctCnclsMthdNm: raw.cntrctCnclsMthdNm?.trim() ?? "",
+    ntceKindNm: raw.ntceKindNm?.trim() ?? "",
+    bidNtceSttusNm: raw.bidNtceSttusNm?.trim() ?? "",
+    reNtceYn: raw.reNtceYn?.trim() ?? "",
+    rbidPermsnYn: raw.rbidPermsnYn?.trim() ?? "",
+    rbidOpengDt: raw.rbidOpengDt ?? "",
+    srvceDivNm: raw.srvceDivNm?.trim() ?? "",
   };
 }
 
@@ -76,3 +136,8 @@ export function mapBidder(raw: RawOpengResult): BidderResult {
     opengStatus: raw.opengRsltDivNm ?? "",
   };
 }
+
+function getNoticeBaseAmount(raw: RawBidNotice | null): number | null {
+  return toNumber(raw?.bssamt);
+}
+
