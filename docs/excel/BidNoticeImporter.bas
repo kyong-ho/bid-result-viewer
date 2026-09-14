@@ -64,6 +64,10 @@ Private Sub WriteNoticeData(ByVal ws As Worksheet, ByVal data As Object)
 
     PutMergedValue ws.Range("D18"), NzText(data, "입찰서제출")
     PutMergedValue ws.Range("D19"), NzText(data, "개찰")
+    PutMergedValue ws.Range("M37"), NzText(data, "공고기관")
+    PutMergedValue ws.Range("M38"), NzText(data, "수요기관")
+    PutMergedValue ws.Range("M39"), NzText(data, "추정가격")
+    PutMergedValue ws.Range("M40"), NzText(data, "낙찰하한율")
 End Sub
 
 Private Sub PutMergedValue(ByVal cell As Range, ByVal value As Variant, Optional ByVal numberFormat As String = "")
@@ -172,5 +176,4 @@ Private Function UrlEncodeUtf8(ByVal value As String) As String
 
     UrlEncodeUtf8 = result
 End Function
-
 

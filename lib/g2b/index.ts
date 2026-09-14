@@ -339,13 +339,18 @@ export async function fetchBidNoticeDetail(
 
 export function formatBidNoticeDetailForVba(payload: BidNoticeExcelPayload): string {
   const baseAmount = payload.excel.baseAmount == null ? "" : String(payload.excel.baseAmount);
+  const presmptPrce = payload.detail.presmptPrce == null ? "" : String(payload.detail.presmptPrce);
+  const sucsfbidLwltRate = payload.detail.sucsfbidLwltRate == null ? "" : String(payload.detail.sucsfbidLwltRate);
   return [
     `공고기관=${payload.excel.agency}`,
+    `수요기관=${payload.detail.dminsttNm}`,
     `공고명=${payload.excel.title}`,
     `입찰공고번호=${payload.excel.bidNumberRaw}`,
     `입찰공고번호표시=${payload.excel.bidNumberForSheet}`,
     `공고차수=${payload.excel.order}`,
     `기초금액=${baseAmount}`,
+    `추정가격=${presmptPrce}`,
+    `낙찰하한율=${sucsfbidLwltRate}`,
     `입찰서제출=${payload.excel.bidSubmitText}`,
     `개찰=${payload.excel.openDateText}`,
   ].join("\n");
